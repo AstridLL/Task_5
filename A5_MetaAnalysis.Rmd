@@ -47,6 +47,9 @@ PitchMean=escalc('SMD', n1i=SampleSizeSchizo, n2i=SampleSizeContros, m1i=PitchMe
 
 PitchSD=escalc('SMD', n1i=SampleSizeSchizo, n2i=SampleSizeContros, m1i=PitchSDSchizo, m2i=PitchSDControls, sd1i=PitchSDSchizoSD, sd2i=PitchSDControlsSD, data = data)
 
+# y1 = Cohen's D
+# v1 = variance of Cohen's D 
+
 # using lmer
 library(lmerTest)
 
@@ -63,7 +66,8 @@ forest(m1)
 # SD
 m2 <- rma(yi, vi, data = PitchSD, slab=Article)
 forest(m2)
-
+summary(m1)
+summary(m1_new)
 # import data from ass. 3
 resultsDF = read.csv("final_rqa.csv", header=TRUE)
 
@@ -102,7 +106,7 @@ MeanModel1 <- lmer(yi ~ 1 + (1 | Article), weights = 1/vi, data=PitchMean1, cont
 SDModel1 <- lmer(yi ~ 1 + (1 | Article), weights = 1/vi, data=PitchSD1, control=lmerControl(check.nobs.vs.nlev="ignore", check.nobs.vs.nRE="ignore"))
 
 # using rma()
-install.packages("randomForest")
+#install.packages("randomForest")
 library(randomForest)
 library(metafor)
 # mean
@@ -111,6 +115,23 @@ forest(m1_new)
 # SD
 m2_new <- rma(yi, vi, data = PitchSD1, slab=Article)
 forest(m2_new)
+summary(m2_new)
+
+# testing for influential studies
+inf <- influence(m1_new)
+print(inf)
+plot(inf)
+# Martinez et al. 2015 ???? (Nr. 10)
+
+# Funnel plots 
+# Plotting effect size against standard error
+# From slides: That is, we check whether the larger the effect size the more unreliable the estimate (otherwise said, whether only bad studies have good results)
+
+funnel(m1_new, main = "Random-Effects Model", xlab = "Standardized Mean Difference")
+
+#What about testing for this?
+regtest(m1_new)
+ranktest(m1_new)
 
 ```
 
